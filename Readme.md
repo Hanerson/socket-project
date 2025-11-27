@@ -44,7 +44,7 @@ String host = req.getHeader("Host");
 HttpResponse resp = new HttpResponse();
 resp.setStatusCode(200);
 resp.setBody("Hello".getBytes(StandardCharsets.UTF_8));
-resp.addHeader("Connection", "close");
+        resp.addHeader("Connection", "close");
 // 输出到 socket
 resp.write(socket.getOutputStream());
 ```
@@ -62,10 +62,10 @@ resp.write(socket.getOutputStream());
 #### 用法示例
 ```java
 try {
-    HttpRequest req = new HttpRequest(in);
+HttpRequest req = new HttpRequest(in);
 } catch (HttpParseException ex) {
-    // 返回 400 Bad Request 响应
-}
+        // 返回 400 Bad Request 响应
+        }
 ```
 #### 设计说明
 - 继承自 `Exception`，要求业务层显式 catch
@@ -81,3 +81,54 @@ try {
 - `testResponseWrite()` 演示一个简单响应如何序列化输出
 #### 用法示例
 执行 main 方法看到解析和序列化的中间结果
+
+---
+# B部分
+
+---
+
+## API 说明
+
+### 1. `SimpleHttpServer: Server.SimpleHttpServer`
+
+#### 功能
+- 服务器主入口，负责初始化并启动 ServerSocket 监听指定端口
+- 内部维护一个固定大小的线程池 (ExecutorService) 以管理并发连接
+- 实现主循环：阻塞接收客户端连接 (accept) 并将其封装为 ConnectionHandler 任务提交给线程池执行
+- 负责 Role C (RequestDispatcher) 的生命周期管理
+- 异常边界处理：确保 accept 过程中的 IO 异常（如连接重置）只记录日志而不导致服务器崩溃
+
+#### 用法示例
+```java
+// 启动监听 8080 端口的服务器
+// 内部会自动初始化 RequestDispatcher 和 线程池
+SimpleHttpServer server = new SimpleHttpServer(8080);
+server.start(); // 进入阻塞循环，服务器开始运行
+```
+
+#### 设计说明
+- 采用 BIO (阻塞IO) + 线程池 模型，有效避免单线程阻塞，支持多客户端同时访问
+
+---
+
+### 2. `ConnectionHandler: Server.ConnectionHandler`
+
+#### 功能
+- 实现 Runnable 接口，作为独立单元在线程池中运行，处理单个 Socket 连接
+- 核心实现 HTTP/1.1 Keep-Alive (长连接) 机制，在循环中处理多次 "请求-响应" 交互，直到断开
+- 设置 Socket 超时 (setSoTimeout)，防止空闲连接长期占用服务器资源
+- 协调工作流：调用 Role A 解析请求 -> 调用 Role C 分发业务 -> 调用 Role A 写回响应
+- 异常隔离：单个连接内的解析错误或网络中断只影响当前线程，不影响主服务器运行
+
+#### 用法示例
+```java
+// 此类通常由 SimpleHttpServer 内部实例化及调用
+Socket clientSocket = serverSocket.accept();
+ConnectionHandler handler = new ConnectionHandler(clientSocket, dispatcher);
+// 提交给线程池
+threadPool.execute(handler);
+```
+
+#### 设计说明
+- 完整生命周期管理：使用 try-finally 块确保无论发生异常还是正常退出，Socket 最终都会被关闭
+- 智能断开策略：根据 SocketTimeoutException（超时）或请求头中的 Connection: close 决定是否跳出 Keep-Alive 循环
