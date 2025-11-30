@@ -132,3 +132,41 @@ threadPool.execute(handler);
 #### 设计说明
 - 完整生命周期管理：使用 try-finally 块确保无论发生异常还是正常退出，Socket 最终都会被关闭
 - 智能断开策略：根据 SocketTimeoutException（超时）或请求头中的 Connection: close 决定是否跳出 Keep-Alive 循环
+---
+# C部分
+
+---
+## API 说明
+
+### 1. Executor
+
+#### 功能 
+- 实现抽象类AbstractExecutor
+- 不同类的Executor实现对不同情况的URL method处理
+- handle方法实现根据给出的request返回对应的respond
+
+#### 用法示例
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getMethod() {
+        return method;
+    }
+
+    public void setMethod(String method) {
+        this.method = method;
+    }
+    public abstract HttpResponse handle (HttpRequest request) throws Exception;
+
+### 2.Template
+
+#### 功能
+- 给出不同状态码的模板化处理
+-具体包括 200 301 302 304 400 404 405 500
+### 3.RequestDispatcher
+
+#### 功能
+- 根据request 分配executor
+- 进行404 405 状态码处理
