@@ -22,6 +22,25 @@ public class HttpResponse {
     private String statusMessage = "OK";
     private final Map<String, String> headers = new LinkedHashMap<>();
     private byte[] body = new byte[0];
+public HttpResponse() {
+    HttpResponse httpResponse = new HttpResponse();
+}
+public HttpResponse(HttpResponse httpResponse) {
+    this.httpVersion = httpResponse.httpVersion;
+    this.statusCode = httpResponse.statusCode;
+    this.statusMessage = httpResponse.statusMessage;
+    this.headers.putAll(httpResponse.headers);
+    this.body = httpResponse.body;
+}
+    public HttpResponse(String httpVersion, int statusCode, String statusMessage, Map<String, String> headers, byte[] body) {
+        this.httpVersion = httpVersion;
+        this.statusCode = statusCode;
+        this.statusMessage = statusMessage;
+        this.headers.putAll(headers);
+        this.body = body;
+    }
+
+
 
     /**
      * 设置状态码，同时采用常用状态码的默认 reason phrase（如果有）。
@@ -58,7 +77,9 @@ public class HttpResponse {
         this.body = body == null ? new byte[0] : body.clone();
         addHeader("Content-Length", String.valueOf(this.body.length));
     }
-
+public void setStringBody(String stringBody) {
+        this.body=stringBody.getBytes(StandardCharsets.UTF_8);
+}
     public byte[] getBody() {
         return body == null ? new byte[0] : body.clone();
     }
