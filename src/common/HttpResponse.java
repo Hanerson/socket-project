@@ -87,6 +87,18 @@ public void setStringBody(String stringBody) {
         return Collections.unmodifiableMap(headers);
     }
 
+    public String getHttpVersion() {
+        return httpVersion;
+    }
+
+    public int getStatusCode() {
+        return statusCode;
+    }
+
+    public String getStatusMessage() {
+        return statusMessage;
+    }
+
     /**
      * 将当前响应写入到输出流。
      *

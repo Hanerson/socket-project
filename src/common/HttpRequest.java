@@ -5,7 +5,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -23,6 +22,9 @@ public class HttpRequest {
     private final Map<String, String> headers;
     private final byte[] body;
 
+    /**
+     * 从输入流解析 HTTP 请求报文（主要用于服务端）。
+     */
     public HttpRequest(InputStream in) throws Exception {
         if (in == null) throw new IllegalArgumentException("InputStream cannot be null");
 
@@ -75,6 +77,35 @@ public class HttpRequest {
             }
         }
         this.body = bodyBytes;
+    }
+
+    /**
+     * 直接构造一个 HttpRequest（供客户端构造请求报文使用）。
+     *
+     * @param method      HTTP 方法，例如 GET/POST
+     * @param uri         请求行中的 URI（路径 + 查询串），例如 "/index.html"
+     * @param httpVersion HTTP 版本，例如 "HTTP/1.1"
+     * @param headers     请求头（大小写不敏感），允许为 null
+     * @param body        请求体字节数组，允许为 null
+     */
+    public HttpRequest(String method,
+                       String uri,
+                       String httpVersion,
+                       Map<String, String> headers,
+                       byte[] body) {
+        if (method == null || uri == null) {
+            throw new IllegalArgumentException("method and uri cannot be null");
+        }
+        this.method = method.toUpperCase();
+        this.uri = uri;
+        this.httpVersion = (httpVersion == null || httpVersion.isEmpty()) ? "HTTP/1.1" : httpVersion;
+
+        TreeMap<String, String> hdrs = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (headers != null) {
+            hdrs.putAll(headers);
+        }
+        this.headers = Collections.unmodifiableMap(hdrs);
+        this.body = (body == null) ? new byte[0] : body.clone();
     }
 
     // 从 BufferedInputStream 按字节读取到 CRLF（不包含 CRLF），返回用 ISO_8859_1 解码的行字符串
