@@ -4,8 +4,9 @@ import common.HttpRequest;
 import common.HttpResponse;
 
 public abstract class AbstractExecutor {
-String url;
-String method;
+    String url;
+    String method;
+
     public String getUrl() {
         return url;
     }
@@ -21,5 +22,6 @@ String method;
     public void setMethod(String method) {
         this.method = method;
     }
-    public abstract HttpResponse handle (HttpRequest request) throws Exception;
+
+    public abstract HttpResponse handle(HttpRequest request) throws Exception;
 }

@@ -11,6 +11,7 @@ import java.util.concurrent.Executors;
  * HTTP 服务器主类 (Role B)
  * 职责：构建服务器并发模型，监听端口，使用线程池分发连接。
  */
+
 public class SimpleHttpServer {
 
     private final int port;
