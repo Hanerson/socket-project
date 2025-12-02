@@ -32,6 +32,12 @@ public class SimpleHttpServer {
         this.threadPool = Executors.newFixedThreadPool(50);
     }
 
+    public SimpleHttpServer(int port, RequestDispatcher dispatcher) {
+        this.port = port;
+        this.dispatcher = dispatcher;
+        this.threadPool = Executors.newFixedThreadPool(50);
+    }
+
     /**
      * 启动服务器
      * 在循环中接收客户端连接，并交给线程池处理。

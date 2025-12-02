@@ -23,7 +23,6 @@ public class HttpResponse {
     private final Map<String, String> headers = new LinkedHashMap<>();
     private byte[] body = new byte[0];
 public HttpResponse() {
-    HttpResponse httpResponse = new HttpResponse();
 }
 public HttpResponse(HttpResponse httpResponse) {
     this.httpVersion = httpResponse.httpVersion;

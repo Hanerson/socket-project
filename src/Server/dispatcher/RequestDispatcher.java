@@ -1,61 +1,65 @@
 package Server.dispatcher;
 
-import Executor.AbstractExecutor;
-import Executor.ErrorExecutor;
-import Executor.LoginExecutor;
-import Executor.RegisterExecutor;
-import Executor.StaticResourceExecutor;
-import Executor.Template.Template;
 import common.HttpRequest;
 import common.HttpResponse;
 
-import java.util.ArrayList;
-
 /**
- * [临时替身] Role C 的分发器
- * 目前仅用于测试 Role B 是否能正常接收请求并调用分发器。
+ * 角色 C：请求分发器
+ * 职责：根据请求的方法和 URI，将请求分发给对应的处理器 [cite: 164, 174]。
  */
 public class RequestDispatcher {
 
-    public HttpResponse dispatch(HttpRequest request) throws Exception {
-        String target = request.getUri();
-        String method = request.getMethod();
-        HttpResponse response = null;
-        AbstractExecutor executor = null;
+    private final StaticFileHandler fileHandler;
+    private final UserAuthHandler authHandler;
 
-        ArrayList<AbstractExecutor> executors = new ArrayList<>();
-        executors.add(new ErrorExecutor());
-        executors.add(new LoginExecutor());
-        executors.add(new RegisterExecutor());
+    public RequestDispatcher() {
+        // 你可以根据实际情况修改这个路径
+        this.fileHandler = new StaticFileHandler("src/res");
+        this.authHandler = new UserAuthHandler();
+    }
 
-        // 处理静态资源请求
-        if (StaticResourceExecutor.isStaticTarget(target) && method.toLowerCase().equals("get")) {
-            executor = new StaticResourceExecutor();
-        } else {
-            // 在持有的executor中找到匹配的处理器
-            for (AbstractExecutor e : executors) {
-                if (target.endsWith(e.getUrl()) && method.toLowerCase().equals(e.getMethod().toLowerCase())) {
-                    executor = e;
-                    break;
+    public HttpResponse dispatch(HttpRequest request) {
+        String method = request.getMethod().toUpperCase();
+        String uri = request.getUri();
+
+        try {
+            // 1. 处理 GET 请求
+            if ("GET".equals(method)) {
+                // 模拟重定向逻辑 (文档 Source 182)
+                if ("/old-page".equals(uri)) {
+                    HttpResponse response = new HttpResponse();
+                    response.setStatusCode(301);
+                    response.addHeader("Location", "/index.html");
+                    return response;
+                }
+
+                // 默认走静态资源处理 (文档 Source 180)
+                // 这里简单判断：如果是注册/登录的 API 路径则不走这里，其余都当静态文件
+                if (!"/register".equals(uri) && !"/login".equals(uri)) {
+                    return fileHandler.handle(request);
                 }
             }
-        }
-
-        // 根据匹配结果生成响应
-        if (executor == null) {
-            response = Template.generateStatusCode_404();
-
-            // todo 针对post静态资源会出现bug，不一定是404
-            for (AbstractExecutor e : executors) {
-                if (target.endsWith(e.getUrl())) {
-                    response = Template.generateStatusCode_405();
-                    break;
+            // 2. 处理 POST 请求 (注册/登录)
+            else if ("POST".equals(method)) {
+                if ("/register".equals(uri)) {
+                    return authHandler.register(request); // [cite: 187]
+                } else if ("/login".equals(uri)) {
+                    return authHandler.login(request);    // [cite: 189]
                 }
             }
-        } else {
-            response = executor.handle(request);
-        }
 
-        return new HttpResponse(response);
+            // 3. 兜底：未匹配到任何路由，返回 404 或 405 [cite: 192]
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(404);
+            response.setStringBody("404 Not Found");
+            return response;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            HttpResponse response = new HttpResponse();
+            response.setStatusCode(500);
+            response.setStringBody("500 Internal Server Error");
+            return response;
+        }
     }
 }
