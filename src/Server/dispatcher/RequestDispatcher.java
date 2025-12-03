@@ -13,7 +13,6 @@ public class RequestDispatcher {
     private final UserAuthHandler authHandler;
 
     public RequestDispatcher() {
-        // 你可以根据实际情况修改这个路径
         this.fileHandler = new StaticFileHandler("src/res");
         this.authHandler = new UserAuthHandler();
     }

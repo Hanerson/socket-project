@@ -109,7 +109,7 @@ public class HttpRequest {
     }
 
     // 从 BufferedInputStream 按字节读取到 CRLF（不包含 CRLF），返回用 ISO_8859_1 解码的行字符串
-    private static String readLine(BufferedInputStream bin) throws Exception {
+    public static String readLine(BufferedInputStream bin) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int prev = -1;
         while (true) {
@@ -136,7 +136,7 @@ public class HttpRequest {
     }
 
     // 从同一个 BufferedInputStream 读取固定字节数（阻塞直到读到足够或 EOF）
-    private static byte[] readFixedBytes(BufferedInputStream in, int len) throws Exception {
+    public static byte[] readFixedBytes(BufferedInputStream in, int len) throws Exception {
         ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
         int remaining = len;
         byte[] buffer = new byte[4096];

@@ -13,8 +13,6 @@ public class ServerBoot {
             // 注意：端口号设为 8080
             SimpleHttpServer server = new SimpleHttpServer(8080, dispatcher);
 
-            // 3. 启动服务器
-            System.out.println("Server started on port 8080...");
             server.start();
 
         } catch (Exception e) {

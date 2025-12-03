@@ -16,6 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static common.HttpRequest.readFixedBytes;
+import static common.HttpRequest.readLine;
+
 /**
  * HTTP 客户端，实现：
  *  - 发送简单的 HTTP 请求
@@ -125,18 +128,7 @@ public class SimpleHttpClient {
                     if (newUrl.getQuery() != null && !newUrl.getQuery().isEmpty()) {
                         newPath = newPath + "?" + newUrl.getQuery();
                     }
-                    String newHostHeader;
-                    int newPort = newUrl.getPort();
-                    if (newPort == -1 || newPort == newUrl.getDefaultPort()) {
-                        newHostHeader = newUrl.getHost();
-                    } else {
-                        newHostHeader = newUrl.getHost() + ":" + newPort;
-                    }
-
-                    Map<String, String> newHeaders = new HashMap<>(currentRequest.getHeaders());
-                    newHeaders.put("Host", newHostHeader);
-                    // 重定向后通常不再携带条件请求头
-                    newHeaders.remove("If-None-Match");
+                    Map<String, String> newHeaders = getStringStringMap(newUrl, currentRequest);
 
                     currentRequest = new HttpRequest(method, newPath, version, newHeaders, body);
                     // 关闭当前 socket，继续下一轮循环
@@ -157,6 +149,22 @@ public class SimpleHttpClient {
             }
         }
         throw new Exception("Too many redirects.");
+    }
+
+    private static Map<String, String> getStringStringMap(URL newUrl, HttpRequest currentRequest) {
+        String newHostHeader;
+        int newPort = newUrl.getPort();
+        if (newPort == -1 || newPort == newUrl.getDefaultPort()) {
+            newHostHeader = newUrl.getHost();
+        } else {
+            newHostHeader = newUrl.getHost() + ":" + newPort;
+        }
+
+        Map<String, String> newHeaders = new HashMap<>(currentRequest.getHeaders());
+        newHeaders.put("Host", newHostHeader);
+        // 重定向后通常不再携带条件请求头
+        newHeaders.remove("If-None-Match");
+        return newHeaders;
     }
 
     /**
@@ -236,45 +244,5 @@ public class SimpleHttpClient {
         }
 
         return new HttpResponse(version, statusCode, message, headers, body);
-    }
-
-    private static String readLine(BufferedInputStream bin) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int prev = -1;
-        while (true) {
-            int cur = bin.read();
-            if (cur == -1) {
-                if (baos.size() == 0) return null;
-                break;
-            }
-            if (prev == '\r' && cur == '\n') {
-                byte[] arr = baos.toByteArray();
-                int len = arr.length;
-                if (len > 0 && arr[len - 1] == '\r') {
-                    return new String(arr, 0, len - 1, StandardCharsets.ISO_8859_1);
-                } else {
-                    return new String(arr, StandardCharsets.ISO_8859_1);
-                }
-            }
-            baos.write(cur);
-            prev = cur;
-        }
-        return new String(baos.toByteArray(), StandardCharsets.ISO_8859_1);
-    }
-
-    private static byte[] readFixedBytes(BufferedInputStream in, int len) throws Exception {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(len);
-        int remaining = len;
-        byte[] buffer = new byte[4096];
-        while (remaining > 0) {
-            int toRead = Math.min(buffer.length, remaining);
-            int r = in.read(buffer, 0, toRead);
-            if (r == -1) {
-                throw new Exception("Unexpected end of stream while reading body");
-            }
-            baos.write(buffer, 0, r);
-            remaining -= r;
-        }
-        return baos.toByteArray();
     }
 }
