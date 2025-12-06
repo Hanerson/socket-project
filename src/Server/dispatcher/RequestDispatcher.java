@@ -13,7 +13,7 @@ public class RequestDispatcher {
     private final UserAuthHandler authHandler;
 
     public RequestDispatcher() {
-        this.fileHandler = new StaticFileHandler("src/res");
+        this.fileHandler = new StaticFileHandler("res");
         this.authHandler = new UserAuthHandler();
     }
 
@@ -36,6 +36,16 @@ public class RequestDispatcher {
                 // 这里简单判断：如果是注册/登录的 API 路径则不走这里，其余都当静态文件
                 if (!"/register".equals(uri) && !"/login".equals(uri)) {
                     return fileHandler.handle(request);
+                }else{
+                    HttpResponse response = new HttpResponse();
+                    response.setStatusCode(405);
+
+                    response.addHeader("Connection", "keep-alive");
+                    response.addHeader("Allow", "POST");
+                    response.setStringBody("405 Method Not Allowed<br>This API only supports POST requests");
+                    response.addHeader("Content-Type", "text/html; charset=UTF-8");
+
+                    return response;
                 }
             }
             // 2. 处理 POST 请求 (注册/登录)

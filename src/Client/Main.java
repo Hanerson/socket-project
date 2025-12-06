@@ -19,7 +19,7 @@ public class Main {
         SimpleHttpClient httpClient = new SimpleHttpClient();
         try (Scanner scanner = new Scanner(System.in)) {
 
-            System.out.print("请输入 URL（例如：http://localhost:8080/index.html）：");
+            System.out.print("URL:");
             String url = scanner.nextLine().trim();
             if (url.isEmpty()) {
                 System.out.println("URL 不能为空。程序结束。");
