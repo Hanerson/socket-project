@@ -82,7 +82,6 @@ public class ConnectionHandler implements Runnable{
             }catch (IOException e){
                 e.printStackTrace();
             }
-            System.out.println("Connection closed: " + socket.getInetAddress());
         }
     }
 }

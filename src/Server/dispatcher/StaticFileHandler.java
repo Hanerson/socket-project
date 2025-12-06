@@ -109,7 +109,6 @@ public class StaticFileHandler {
             response.addHeader("Last-Modified", lastModifiedStr);
 
         } catch (IOException e) {
-            // ========== 完善：500 异常处理 ==========
             e.printStackTrace();
             response.setStatusCode(500);
             response.addHeader("Connection", "keep-alive");

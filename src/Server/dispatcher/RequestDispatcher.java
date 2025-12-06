@@ -30,6 +30,13 @@ public class RequestDispatcher {
                     response.setStatusCode(301);
                     response.addHeader("Location", "/index.html");
                     return response;
+                }else{
+                    if("/temp-page".equals(uri)){
+                        HttpResponse response = new HttpResponse();
+                        response.setStatusCode(302);
+                        response.addHeader("Location", "/index.html");
+                        return response;
+                    }
                 }
 
                 // 默认走静态资源处理 (文档 Source 180)
@@ -54,6 +61,16 @@ public class RequestDispatcher {
                     return authHandler.register(request); // [cite: 187]
                 } else if ("/login".equals(uri)) {
                     return authHandler.login(request);    // [cite: 189]
+                }else{
+                    HttpResponse response = new HttpResponse();
+                    response.setStatusCode(405);
+
+                    response.addHeader("Connection", "keep-alive");
+                    response.addHeader("Allow", "POST");
+                    response.setStringBody("405 Method Not Allowed<br>This API only supports GET requests");
+                    response.addHeader("Content-Type", "text/html; charset=UTF-8");
+
+                    return response;
                 }
             }
 
