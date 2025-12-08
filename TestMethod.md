@@ -4,7 +4,7 @@
 **测试环境**：Windows CMD (命令提示符)
 **前置条件**：
 
-1.  服务器已启动 (运行 `IntegrationTest` 或 `SimpleHttpServer`)，监听端口 `8080`。
+1.  服务器已启动 (运行 `IntegrationTest` 或 `SimpleHttpServer`)，监听端口 `80035`。
 2.  项目根目录下存在 `webroot` 文件夹，且其中包含 `index.html` 文件（内容任意，如 "Hello Role C"）。
 
 -----
@@ -17,7 +17,7 @@
 
 * **命令**：
   ```cmd
-  curl -v http://localhost:8080/index.html
+  curl -v http://localhost:80035/index.html
   ```
 * **预期结果**：
     * 状态行：`HTTP/1.1 200 OK`
@@ -31,7 +31,7 @@
 
 * **命令**：
   ```cmd
-  curl -v http://localhost:8080/not_exist_file.html
+  curl -v http://localhost:80035/not_exist_file.html
   ```
 * **预期结果**：
     * 状态行：`HTTP/1.1 404 Not Found`
@@ -41,11 +41,11 @@
 [cite_start]验证当客户端携带缓存标识时，服务器能否正确返回 304 状态码 [cite: 201, 202]。
 
 * **步骤 1 (获取 ETag)**：
-  先执行 `curl -v http://localhost:8080/index.html`，找到响应头中的 `ETag` 值（例如 `W/"173000-50"`）。
+  先执行 `curl -v http://localhost:80035/index.html`，找到响应头中的 `ETag` 值（例如 `W/"173000-50"`）。
 * **步骤 2 (带 ETag 请求)**：
   将获取的 ETag 填入下方命令（**注意：CMD 中内部的双引号需要用 `\` 转义**）：
   ```cmd
-  curl -v -H "If-None-Match: W/\"替换为你的ETag数字\"" http://localhost:8080/index.html
+  curl -v -H "If-None-Match: W/\"替换为你的ETag数字\"" http://localhost:80035/index.html
   ```
   *(示例：如果 ETag 是 `W/"12345"`, 则写为 `W/\"12345\"`)*
 * **预期结果**：
@@ -62,7 +62,7 @@
 
 * **命令**：
   ```cmd
-  curl -v -d "username=testuser&password=123" http://localhost:8080/register
+  curl -v -d "username=testuser&password=123" http://localhost:80035/register
   ```
 * **预期结果**：
     * 状态行：`HTTP/1.1 200 OK`
@@ -84,7 +84,7 @@
 
 * **命令**：
   ```cmd
-  curl -v -d "username=testuser&password=123" http://localhost:8080/login
+  curl -v -d "username=testuser&password=123" http://localhost:80035/login
   ```
 * **预期结果**：
     * 状态行：`HTTP/1.1 200 OK`
@@ -96,7 +96,7 @@
 
 * **命令**：
   ```cmd
-  curl -v -d "username=testuser&password=wrongpass" http://localhost:8080/login
+  curl -v -d "username=testuser&password=wrongpass" http://localhost:80035/login
   ```
 * **预期结果**：
     * 状态行：`HTTP/1.1 401 Unauthorized`

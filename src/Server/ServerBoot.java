@@ -10,8 +10,7 @@ public class ServerBoot {
             RequestDispatcher dispatcher = new RequestDispatcher();
 
             // 2. 将分发器注入到服务器 (Role B)
-            // 注意：端口号设为 8080
-            SimpleHttpServer server = new SimpleHttpServer(8080, dispatcher);
+            SimpleHttpServer server = new SimpleHttpServer(80035, dispatcher);
 
             server.start();
 

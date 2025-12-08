@@ -100,9 +100,8 @@ HttpRequest req = new HttpRequest(in);
 
 #### 用法示例
 ```java
-// 启动监听 8080 端口的服务器
 // 内部会自动初始化 RequestDispatcher 和 线程池
-SimpleHttpServer server = new SimpleHttpServer(8080);
+SimpleHttpServer server = new SimpleHttpServer(80035);
 server.start(); // 进入阻塞循环，服务器开始运行
 ```
 
