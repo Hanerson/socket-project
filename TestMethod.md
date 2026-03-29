@@ -1,7 +1,7 @@
 # HTTP Server - Role C 功能测试文档 (v1.0)
 
 **测试目标**：验证 `RequestDispatcher`、`StaticFileHandler`、`UserAuthHandler` 及 `MimeTypes` 组件的功能正确性。
-**测试环境**：Windows CMD (命令提示符)
+**测试环境**：Windows CMD (命令提示符) 或 PowerShell
 **前置条件**：
 
 1.  服务器已启动 (运行 `IntegrationTest` 或 `SimpleHttpServer`)，监听端口 `80035`。
@@ -43,11 +43,20 @@
 * **步骤 1 (获取 ETag)**：
   先执行 `curl -v http://localhost:80035/index.html`，找到响应头中的 `ETag` 值（例如 `W/"173000-50"`）。
 * **步骤 2 (带 ETag 请求)**：
-  将获取的 ETag 填入下方命令（**注意：CMD 中内部的双引号需要用 `\` 转义**）：
+  将获取的 ETag 填入下方命令。**CMD 与 PowerShell 的引号语法不同，请根据你的环境选择对应命令**：
+
+  **CMD（命令提示符）**（内部双引号需用 `\` 转义）：
   ```cmd
   curl -v -H "If-None-Match: W/\"替换为你的ETag数字\"" http://localhost:80035/index.html
   ```
   *(示例：如果 ETag 是 `W/"12345"`, 则写为 `W/\"12345\"`)*
+
+  **PowerShell**（用单引号包裹整个 Header 值，无需转义内部双引号）：
+  ```powershell
+  curl -v -H 'If-None-Match: W/"替换为你的ETag数字"' http://localhost:80035/index.html
+  ```
+  *(示例：如果 ETag 是 `W/"12345"`, 则写为 `'If-None-Match: W/"12345"'`)*
+
 * **预期结果**：
     * 状态行：`HTTP/1.1 304 Not Modified`
     * **无响应体** (不显示 HTML 内容)
@@ -135,3 +144,25 @@
 
     * **原因**：ETag 格式错误，Windows CMD 处理双引号时未转义。
     * **解决**：确保 `If-None-Match` 的值中，引号前加了反斜杠，例如 `\"value\"`。
+
+4.  **PowerShell 与 CMD (命令提示符) 的 curl 命令区别**：
+
+    PowerShell 和 CMD 对引号的处理方式不同，在编写含双引号的 curl 命令时需要注意：
+
+    | 场景 | CMD 写法 | PowerShell 写法 |
+    |------|---------|----------------|
+    | 带双引号的 Header | `"If-None-Match: W/\"12345\""` | `'If-None-Match: W/"12345"'` |
+    | 普通字符串参数 | `"username=user&password=pass"` | `"username=user&password=pass"` (相同) |
+
+    * **CMD**：在双引号字符串内部，需用反斜杠 `\` 转义双引号，例如：
+      ```cmd
+      curl -v -H "If-None-Match: W/\"12345\"" http://localhost:80035/index.html
+      ```
+    * **PowerShell**：推荐用单引号 `'...'` 包裹整个参数值，单引号内的双引号无需转义，例如：
+      ```powershell
+      curl -v -H 'If-None-Match: W/"12345"' http://localhost:80035/index.html
+      ```
+    * **PowerShell 备用方案**：若需在双引号字符串中嵌入双引号，可使用反引号 `` ` `` 转义：
+      ```powershell
+      curl -v -H "If-None-Match: W/`"12345`"" http://localhost:80035/index.html
+      ```
